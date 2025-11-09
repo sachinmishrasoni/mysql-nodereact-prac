@@ -25,7 +25,7 @@ app.get('/', (_req, res) => {
 //   res.status(404).send(`Cannot find ${req.method} - ${req.url} on this server`);
 // });
 
-app.use((req, res) => {
+app.use((_req, res) => {
     res
         .status(404)
         .sendFile(path.join(__dirname, "views", "404.html"));
