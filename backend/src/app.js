@@ -2,6 +2,7 @@ import express from 'express';
 import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import authRouter from './routes/auth.route.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,6 +17,8 @@ app.use(morgan('dev'));
 app.get('/', (_req, res) => {
     res.send('Hello World!');
 });
+
+app.use('/api/v1/auth', authRouter);
 
 // app.all('/:path(*)', (req, res) => {
 //   res.status(404).send(`Cannot ${req.method} ${req.url}`);
