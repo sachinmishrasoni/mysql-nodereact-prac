@@ -1,14 +1,21 @@
 import express from 'express';
 import morgan from 'morgan';
+import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import authRouter from './routes/auth.route.js';
+import todoRouter from './routes/todo.route.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
+app.use(cors({
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));  
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -19,6 +26,7 @@ app.get('/', (_req, res) => {
 });
 
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/todos', todoRouter);
 
 // app.all('/:path(*)', (req, res) => {
 //   res.status(404).send(`Cannot ${req.method} ${req.url}`);
