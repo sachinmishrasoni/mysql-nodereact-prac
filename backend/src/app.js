@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import authRouter from './routes/auth.route.js';
 import todoRouter from './routes/todo.route.js';
+import { authMiddleware } from './middlewares/auth.middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,7 +27,7 @@ app.get('/', (_req, res) => {
 });
 
 app.use('/api/v1/auth', authRouter);
-app.use('/api/v1/todos', todoRouter);
+app.use('/api/v1/todos', authMiddleware, todoRouter);
 
 // app.all('/:path(*)', (req, res) => {
 //   res.status(404).send(`Cannot ${req.method} ${req.url}`);
