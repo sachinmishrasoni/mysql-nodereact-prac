@@ -35,9 +35,11 @@ axiosInstance.interceptors.response.use(
 
         // Unauthorized (401)
         else if (error.response.status === 401) {
-            toast.error("Session expired. Please log in again.");
+            const msg = error.response.data?.message || "Unauthorized access.";
+            // toast.error("Session expired. Please log in again.");
+            toast.error(msg);
             localStorage.removeItem("token");
-            window.location.href = "/auth/login"; // optional redirect
+            // window.location.href = "/auth/login"; // optional redirect
         }
 
         // Forbidden (403)

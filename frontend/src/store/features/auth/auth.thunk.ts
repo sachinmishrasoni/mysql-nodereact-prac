@@ -13,3 +13,16 @@ export const signUp = createAsyncThunk(
         }
     }
 );
+
+export const logIn = createAsyncThunk(
+    "auth/logIn",
+    async (credentials: any, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.post(API_ROUTES.LOGIN, credentials);
+            localStorage.setItem("token", response.data.token);
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(err);
+        }
+    }
+);
