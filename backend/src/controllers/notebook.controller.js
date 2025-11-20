@@ -72,3 +72,75 @@ export const getNotebookById = async (req, res) => {
     }
 };
 
+
+export const updateNotebook = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const notebookId = req.params.id;
+        const { title, description, color } = req.body || {};
+
+        if (!title) {
+            return res.status(400).json({ message: "Title is required." });
+        }
+
+        const [existing] = await pool.query(
+            "SELECT id, user_id, title, description, color, created_at, updated_at FROM notebooks WHERE user_id = ? AND id = ? AND is_deleted = false",
+            [userId, notebookId]
+        );
+
+        if (existing.length === 0) {
+            return res.status(404).json({ message: "Notebook not found." });
+        }
+
+        await pool.query(
+            "UPDATE notebooks SET title = ?, description = ?, color = ? WHERE user_id = ? AND id = ?",
+            [title, description ?? "", color ?? "#fff", userId, notebookId]
+        );
+
+        const [notebook] = await pool.query(
+            "SELECT id, user_id, title, description, color, created_at, updated_at FROM notebooks WHERE id = ?",
+            [notebookId]
+        )
+
+        res.status(200).json(
+            {
+                message: "Notebook updated successfully.",
+                data: notebook[0]
+            }
+        )
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+export const deleteNotebook = async (req, res) => { 
+    try {
+        const userId = req.user.id;
+        const notebookId = req.params.id;
+
+        const [existing] = await pool.query(
+            "SELECT * FROM notebooks WHERE user_id = ? AND id = ? AND is_deleted = false",
+            [userId, notebookId]
+        );
+
+        if (existing.length === 0) {
+            return res.status(404).json({ message: "Notebook not found." });
+        }
+
+        await pool.query(
+            "UPDATE notebooks SET is_deleted = true WHERE user_id = ? AND id = ?",
+            [userId, notebookId]
+        );
+
+        res.status(200).json(
+            {
+                message: "Notebook deleted successfully.",
+                data: {
+                    id: notebookId
+                }
+            }
+        )
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
