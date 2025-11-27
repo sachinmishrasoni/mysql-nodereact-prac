@@ -83,7 +83,23 @@ export const createPost = async (req, res) => {
 };
 
 
-export const getAllPosts = async (req, res) => { };
+export const getAllPosts = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const [posts] = await pool.query(
+            "SELECT id, title, content, image_url, slug, created_at, updated_at FROM posts WHERE user_id = ?",
+            [userId]
+        );
+
+        res.status(200).json({
+            message: "Posts retrieved successfully",
+            data: posts
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+ };
 export const getPostById = async (req, res) => { };
 export const updatePost = async (req, res) => { };
 export const deletePost = async (req, res) => { };
