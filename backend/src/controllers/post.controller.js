@@ -350,3 +350,67 @@ export const deletePost = async (req, res) => {
         conn.release();
     }
 };
+
+export const toggleLikePost = async (req, res) => {
+    const conn = await pool.getConnection();
+    try {
+        const userId = req.user.id;
+        const { id } = req.params;
+
+        await conn.beginTransaction();
+
+        const [post] = await conn.query(
+            "SELECT * FROM posts WHERE id = ? AND is_deleted = false",
+            [id]
+        );
+
+        if (post.length === 0) {
+            await conn.rollback();
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        const [existingLike] = await conn.query(
+            "SELECT * FROM post_likes WHERE user_id = ? AND post_id = ?",
+            [userId, id]
+        );
+
+        let action ="";
+
+        if (existingLike.length === 0) {
+            await conn.query(
+                "INSERT INTO post_likes (user_id, post_id) VALUES (?, ?)",
+                [userId, id]
+            );
+            action = "liked";
+        } else {
+            await conn.query(
+                "DELETE FROM post_likes WHERE user_id = ? AND post_id = ?",
+                [userId, id]
+            );
+            action = "unliked";
+        }
+
+        const [[likeCount]] = await conn.query(
+            "SELECT COUNT(*) AS likesCount FROM post_likes WHERE post_id = ?",
+            [id]
+        );
+        // console.log(likeCount, 'enumsam');
+
+        await conn.commit();
+
+        res.status(200).json({
+            message: `Post ${action} successfully`,
+            data: {
+                id,
+                action,
+                likesCount: likeCount.likesCount
+            }
+        });
+        
+    } catch (err) {
+        await conn.rollback();
+        res.status(500).json({ message: err.message });
+    } finally {
+        conn.release();
+    }       
+}
